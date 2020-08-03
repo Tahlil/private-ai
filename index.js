@@ -3,21 +3,23 @@ const { spawn } = require("child_process");
 const app = express();
 const port = 3000;
 app.get("/", (req, res) => {
-  var dataToSend;
+  var largeDataSet = [];
   // spawn new child process to call the python script
-  const python = spawn("python", ["example.py","p1", "p2"]);
+  const python = spawn("python", ["json.py"]);
   // collect data from script
   python.stdout.on("data", function (data) {
     console.log("Pipe data from python script ...");
-
-    dataToSend = data.toString();
-    console.log("Data sent: " + dataToSend);
+    largeDataSet.push(data);
+    for (let index = 0; index < largeDataSet.length; index++) {
+      const element = largeDataSet[index];
+      console.log("Element: " + element);
+    }
   });
-  // in close event we are sure that stream from child process is closed
+  // in close event we are sure that stream is from child process is closed
   python.on("close", (code) => {
     console.log(`child process close all stdio with code ${code}`);
     // send data to browser
-    res.send(dataToSend);
+    res.send(largeDataSet.join(""));
   });
 });
 app.listen(port, () =>
